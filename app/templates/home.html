@@ -6,6 +6,19 @@
     <link href="/static/output.css" rel="stylesheet">
 </head>
 <body class="bg-gray-900 text-white font-sans p-8">
+    {% if user %}
+  <div class="mb-4 text-sm">
+    Logged in as <strong>{{ user.username }}</strong> |
+    <a href="/logout" class="text-blue-400 hover:underline">Logout</a>
+  </div>
+{% else %}
+  <div class="mb-4 text-sm">
+    <a href="/login" class="text-blue-400 hover:underline">Login</a>
+  </div>
+{% endif %}
+
+<a href="/register" class="ml-4 text-green-400 hover:underline">Register</a>
+
 
     <h2 class="text-xl mb-2">Browse by Category</h2>
     <ul class="flex flex-wrap gap-4 mb-6">

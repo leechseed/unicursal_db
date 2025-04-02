@@ -1,3 +1,6 @@
+from app import auth
+from app.auth import get_current_user
+
 from fastapi import FastAPI, Request, Depends, HTTPException, Form
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -6,7 +9,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime
-import markdown  # ✅ Required for Markdown rendering
+import markdown
 
 from .database import SessionLocal
 from .models import Article, Category, Revision
@@ -25,17 +28,28 @@ def get_db():
         db.close()
 
 @app.get("/")
-def homepage(request: Request, db: Session = Depends(get_db)):
+def homepage(
+    request: Request,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
     articles = db.query(Article).all()
     categories = db.query(Category).all()
     return templates.TemplateResponse("home.html", {
         "request": request,
         "articles": articles,
-        "categories": categories
+        "categories": categories,
+        "user": user
     })
 
 @app.get("/articles/new")
-def new_article_form(request: Request, db: Session = Depends(get_db)):
+def new_article_form(
+    request: Request,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    if not user:
+        return RedirectResponse("/login", status_code=303)
     categories = db.query(Category).all()
     return templates.TemplateResponse("new_article.html", {
         "request": request,
@@ -47,20 +61,24 @@ def create_article(
     title: str = Form(...),
     content: str = Form(...),
     category_ids: List[int] = Form(default=[]),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
 ):
-    article = Article(title=title, is_redirect=False, created_by=1)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+
+    article = Article(title=title, is_redirect=False, created_by=user.id)
 
     if category_ids:
         article.categories = db.query(Category).filter(Category.id.in_(category_ids)).all()
 
     db.add(article)
-    db.commit()  # commits to get the ID
+    db.commit()
 
     revision = Revision(
         article_id=article.id,
         content=content,
-        edited_by=1,
+        edited_by=user.id,
         summary="Initial version",
         edited_at=datetime.utcnow()
     )
@@ -106,8 +124,6 @@ def submit_article_edit(
     db.commit()
 
     return RedirectResponse("/", status_code=303)
-
-import markdown
 
 @app.get("/articles/{article_id}/history")
 def article_history(article_id: int, request: Request, db: Session = Depends(get_db)):
@@ -174,3 +190,5 @@ def article_detail(article_id: int, request: Request, db: Session = Depends(get_
         "latest_revision": latest_revision,
         "rendered_html": rendered_html
     })
+
+app.include_router(auth.router)
