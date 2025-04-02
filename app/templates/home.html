@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Unicursal DB</title>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <link href="/static/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white font-sans p-8">
+
+    <h2 class="text-xl mb-2">Browse by Category</h2>
+    <ul class="flex flex-wrap gap-4 mb-6">
+        {% for cat in categories %}
+        <li>
+            <a href="/categories/{{ cat.id }}" class="bg-blue-700 px-3 py-1 rounded hover:bg-blue-800">
+                {{ cat.name }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <h1 class="text-3xl mb-4">Articles</h1>
+    <ul>
+        {% for article in articles %}
+        <li class="mb-2">
+            <a href="/articles/{{ article.id }}" class="text-blue-400 hover:underline">{{ article.title }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Category: {{ category.name }}</title>
+  <link href="/static/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white p-8">
+  <h1 class="text-2xl mb-4">Category: {{ category.name }}</h1>
+  <ul class="space-y-2">
+    {% for article in articles %}
+    <li>
+      <a href="/articles/{{ article.id }}" class="text-blue-400 hover:underline">{{ article.title }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
