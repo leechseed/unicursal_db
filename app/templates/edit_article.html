@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Edit Article</title>
+  <link href="/static/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white p-8">
+  <h1 class="text-2xl mb-4">Editing: {{ article.title }}</h1>
+  <form method="post" action="/articles/{{ article.id }}/edit" class="space-y-4">
+    <textarea name="content" rows="12" class="w-full p-2 text-black" required>{{ latest.content }}</textarea>
+    <input type="text" name="summary" placeholder="Revision summary" class="w-full p-2 text-black">
+    <button type="submit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2">Save Revision</button>
+  </form>
+</body>
+</html>

@@ -50,3 +50,51 @@ def create_article(
     db.commit()
 
     return RedirectResponse("/", status_code=303)
+
+from fastapi import HTTPException
+
+@app.get("/articles/{article_id}/edit")
+def edit_article_form(article_id: int, request: Request, db: Session = Depends(get_db)):
+    article = db.query(Article).filter(Article.id == article_id).first()
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    latest = db.query(Revision).filter(Revision.article_id == article_id).order_by(Revision.edited_at.desc()).first()
+    return templates.TemplateResponse("edit_article.html", {"request": request, "article": article, "latest": latest})
+
+
+@app.post("/articles/{article_id}/edit")
+def submit_article_edit(
+    article_id: int,
+    content: str = Form(...),
+    summary: str = Form(""),
+    db: Session = Depends(get_db)
+):
+    article = db.query(Article).filter(Article.id == article_id).first()
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    revision = Revision(
+        article_id=article.id,
+        content=content,
+        edited_by=1,
+        summary=summary or "Updated content"
+    )
+    db.add(revision)
+    db.commit()
+
+    return RedirectResponse("/", status_code=303)
+
+@app.get("/articles/{article_id}/history")
+def article_history(article_id: int, request: Request, db: Session = Depends(get_db)):
+    article = db.query(Article).filter(Article.id == article_id).first()
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    revisions = db.query(Revision).filter(Revision.article_id == article_id).order_by(Revision.edited_at.desc()).all()
+
+    return templates.TemplateResponse("article_history.html", {
+        "request": request,
+        "article": article,
+        "revisions": revisions
+    })

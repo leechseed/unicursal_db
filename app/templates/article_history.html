@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Revision History</title>
+  <link href="/static/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white p-8">
+  <h1 class="text-2xl mb-4">Revision History: {{ article.title }}</h1>
+  <ul class="space-y-2">
+    {% for rev in revisions %}
+    <li class="border-b border-gray-700 pb-2">
+      <p><strong>{{ rev.edited_at.strftime('%Y-%m-%d %H:%M') }}</strong> - {{ rev.summary or 'No summary' }}</p>
+      <pre class="bg-gray-800 p-2 mt-1 overflow-x-auto whitespace-pre-wrap text-sm">{{ rev.content }}</pre>
+    </li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
