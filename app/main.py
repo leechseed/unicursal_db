@@ -12,7 +12,7 @@ from datetime import datetime
 import markdown
 
 from .database import SessionLocal
-from .models import Article, Category, Revision
+from .models import Article, Category, Revision, Tag
 
 app = FastAPI()
 
@@ -52,7 +52,6 @@ def search(request: Request, q: str = "", db: Session = Depends(get_db), user=De
         "user": user
     })
 
-
 @app.get("/articles/new")
 def new_article_form(
     request: Request,
@@ -62,9 +61,11 @@ def new_article_form(
     if not user:
         return RedirectResponse("/login", status_code=303)
     categories = db.query(Category).all()
+    tags = db.query(Tag).all()  # New: fetch all tags
     return templates.TemplateResponse("new_article.html", {
         "request": request,
-        "categories": categories
+        "categories": categories,
+        "tags": tags
     })
 
 @app.post("/articles/new")
@@ -72,6 +73,7 @@ def create_article(
     title: str = Form(...),
     content: str = Form(...),
     category_ids: List[int] = Form(default=[]),
+    tag_ids: List[int] = Form(default=[]),
     db: Session = Depends(get_db),
     user=Depends(get_current_user)
 ):
@@ -83,8 +85,11 @@ def create_article(
     if category_ids:
         article.categories = db.query(Category).filter(Category.id.in_(category_ids)).all()
 
+    if tag_ids:
+        article.tags = db.query(Tag).filter(Tag.id.in_(tag_ids)).all()
+
     db.add(article)
-    db.commit()
+    db.flush()  # flush to assign article.id
 
     revision = Revision(
         article_id=article.id,
@@ -203,3 +208,52 @@ def article_detail(article_id: int, request: Request, db: Session = Depends(get_
     })
 
 app.include_router(auth.router)
+
+from typing import List
+
+@app.post("/articles/new")
+def create_article(
+    title: str = Form(...),
+    content: str = Form(...),
+    category_ids: List[int] = Form(default=[]),
+    tag_ids: List[int] = Form(default=[]),
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    article = Article(title=title, is_redirect=False, created_by=user.id)
+
+    if category_ids:
+        article.categories = db.query(Category).filter(Category.id.in_(category_ids)).all()
+
+    if tag_ids:
+        article.tags = db.query(Tag).filter(Tag.id.in_(tag_ids)).all()
+
+    db.add(article)
+    db.flush()
+
+    revision = Revision(
+        article_id=article.id,
+        content=content,
+        edited_by=user.id,
+        summary="Initial version"
+    )
+    db.add(revision)
+    db.commit()
+
+    return RedirectResponse("/", status_code=303)
+
+from app.models import Tag
+
+@app.get("/tags/{tag_id}")
+def tag_view(tag_id: int, request: Request, db: Session = Depends(get_db)):
+    tag = db.query(Tag).filter(Tag.id == tag_id).first()
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
+
+    articles = tag.articles
+
+    return templates.TemplateResponse("tag.html", {
+        "request": request,
+        "tag": tag,
+        "articles": articles
+    })
