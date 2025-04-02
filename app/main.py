@@ -138,3 +138,22 @@ def category_view(category_id: int, request: Request, db: Session = Depends(get_
         "category": category,
         "articles": articles
     })
+
+@app.get("/articles/{article_id}")
+def article_detail(article_id: int, request: Request, db: Session = Depends(get_db)):
+    article = db.query(Article).filter(Article.id == article_id).first()
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    latest_revision = (
+        db.query(Revision)
+        .filter(Revision.article_id == article_id)
+        .order_by(Revision.edited_at.desc())
+        .first()
+    )
+
+    return templates.TemplateResponse("article_detail.html", {
+        "request": request,
+        "article": article,
+        "latest_revision": latest_revision
+    })

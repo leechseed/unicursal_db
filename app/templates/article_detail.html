@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ article.title }}</title>
+  <link href="/static/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white p-8">
+  <h1 class="text-3xl mb-4">{{ article.title }}</h1>
+
+  <div class="mb-6">
+    {% for cat in article.categories %}
+      <a href="/categories/{{ cat.id }}" class="bg-gray-700 px-3 py-1 mr-2 rounded hover:bg-gray-600">{{ cat.name }}</a>
+    {% endfor %}
+  </div>
+
+  <article class="bg-gray-800 p-4 rounded mb-6">
+    <pre class="whitespace-pre-wrap text-sm">{{ latest_revision.content }}</pre>
+  </article>
+
+  <div class="flex gap-4">
+    <a href="/articles/{{ article.id }}/edit" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Edit</a>
+    <a href="/articles/{{ article.id }}/history" class="bg-gray-700 hover:bg-gray-800 px-4 py-2 rounded">View History</a>
+  </div>
+</body>
+</html>
