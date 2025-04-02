@@ -7,18 +7,23 @@
 </head>
 <body class="bg-gray-900 text-white font-sans p-8">
     {% if user %}
-  <div class="mb-4 text-sm">
-    Logged in as <strong>{{ user.username }}</strong> |
-    <a href="/logout" class="text-blue-400 hover:underline">Logout</a>
-  </div>
-{% else %}
-  <div class="mb-4 text-sm">
-    <a href="/login" class="text-blue-400 hover:underline">Login</a>
-  </div>
-{% endif %}
+    <div class="mb-4 text-sm">
+        Logged in as <strong>{{ user.username }}</strong> |
+        <a href="/logout" class="text-blue-400 hover:underline">Logout</a>
+    </div>
+    {% else %}
+    <div class="mb-4 text-sm">
+        <a href="/login" class="text-blue-400 hover:underline">Login</a>
+    </div>
+    {% endif %}
 
-<a href="/register" class="ml-4 text-green-400 hover:underline">Register</a>
+    <a href="/register" class="ml-4 text-green-400 hover:underline">Register</a>
 
+    <!-- 🔍 Search Form -->
+    <form method="get" action="/search" class="mb-6">
+        <input type="text" name="q" placeholder="Search articles..." class="p-2 text-black w-1/2">
+        <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 ml-2">Search</button>
+    </form>
 
     <h2 class="text-xl mb-2">Browse by Category</h2>
     <ul class="flex flex-wrap gap-4 mb-6">
@@ -39,6 +44,5 @@
         </li>
         {% endfor %}
     </ul>
-
 </body>
 </html>

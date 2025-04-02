@@ -42,6 +42,17 @@ def homepage(
         "user": user
     })
 
+@app.get("/search")
+def search(request: Request, q: str = "", db: Session = Depends(get_db), user=Depends(get_current_user)):
+    articles = db.query(Article).filter(Article.title.ilike(f"%{q}%")).all()
+    return templates.TemplateResponse("search_results.html", {
+        "request": request,
+        "articles": articles,
+        "query": q,
+        "user": user
+    })
+
+
 @app.get("/articles/new")
 def new_article_form(
     request: Request,
