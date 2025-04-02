@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime
+import markdown  # ✅ Required for Markdown rendering
 
 from .database import SessionLocal
 from .models import Article, Category, Revision
@@ -106,13 +107,23 @@ def submit_article_edit(
 
     return RedirectResponse("/", status_code=303)
 
+import markdown
+
 @app.get("/articles/{article_id}/history")
 def article_history(article_id: int, request: Request, db: Session = Depends(get_db)):
     article = db.query(Article).filter(Article.id == article_id).first()
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
 
-    revisions = db.query(Revision).filter(Revision.article_id == article_id).order_by(Revision.edited_at.desc()).all()
+    revisions = (
+        db.query(Revision)
+        .filter(Revision.article_id == article_id)
+        .order_by(Revision.edited_at.desc())
+        .all()
+    )
+
+    for rev in revisions:
+        rev.rendered = markdown.markdown(rev.content or "", extensions=["fenced_code", "tables"])
 
     return templates.TemplateResponse("article_history.html", {
         "request": request,
@@ -152,8 +163,14 @@ def article_detail(article_id: int, request: Request, db: Session = Depends(get_
         .first()
     )
 
+    rendered_html = markdown.markdown(
+        latest_revision.content or "",
+        extensions=["fenced_code", "tables"]
+    )
+
     return templates.TemplateResponse("article_detail.html", {
         "request": request,
         "article": article,
-        "latest_revision": latest_revision
+        "latest_revision": latest_revision,
+        "rendered_html": rendered_html
     })

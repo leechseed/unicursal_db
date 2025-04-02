@@ -10,7 +10,10 @@
     {% for rev in revisions %}
     <li class="border-b border-gray-700 pb-2">
       <p><strong>{{ rev.edited_at.strftime('%Y-%m-%d %H:%M') }}</strong> - {{ rev.summary or 'No summary' }}</p>
-      <pre class="bg-gray-800 p-2 mt-1 overflow-x-auto whitespace-pre-wrap text-sm">{{ rev.content }}</pre>
+      <div class="prose prose-invert bg-gray-800 p-4 mt-2 rounded text-sm max-w-none">
+        {{ rev.rendered | safe }}
+      </div>
+      
     </li>
     {% endfor %}
   </ul>
