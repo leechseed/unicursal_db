@@ -40,3 +40,5 @@
 - How to handle redirects elegantly?
 - Should we support multi-language articles?
 - What’s the long-term plan for deployment & hosting?
+
+- **[Day 2] (continued)**: Initialized FastAPI app and verified it runs. Root route returns JSON success message.
